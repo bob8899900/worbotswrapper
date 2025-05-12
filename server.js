@@ -1,4 +1,6 @@
-import { load } from 'cheerio'; // Correct import style for ESM
+import express from 'express'; // Correct import style for ESM
+import axios from 'axios';
+import { load } from 'cheerio';
 
 const app = express();
 const targetUrl = 'https://example.com'; // Replace with the URL you want to proxy
