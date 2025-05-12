@@ -1,43 +1,15 @@
-import axios from 'axios';
-import cheerio from 'cheerio';
-import express from 'express';
+import { load } from 'cheerio'; // Correct import style for ESM
 
 const app = express();
-const targetUrl = 'https://example.com'; // Your target URL
+const targetUrl = 'https://example.com'; // Replace with the URL you want to proxy
 
-// Proxy route for fetching and modifying CSS
-app.get('/css/*', async (req, res) => {
-  const cssPath = req.params[0]; // Capture the CSS path from the URL
-
-  try {
-    // Fetch the CSS content
-    const response = await axios.get(`${targetUrl}/css/${cssPath}`);
-    let cssContent = response.data;
-
-    // Rewrite URLs for background images
-    cssContent = cssContent.replace(/url\(['"]?([^\)'"]+)['"]?\)/g, (match, url) => {
-      if (url.startsWith('/')) {
-        return `url("https://proxy-server.onrender.com${url}")`; // Rewrite relative URLs
-      }
-      return match;
-    });
-
-    // Send the modified CSS back
-    res.type('text/css');
-    res.send(cssContent);
-  } catch (error) {
-    console.error('Error loading CSS:', error);
-    res.status(500).send('Error loading CSS');
-  }
-});
-
-// Proxy route for fetching HTML and other resources
 app.get('/', async (req, res) => {
   try {
+    // Fetch the content of the target URL
     const response = await axios.get(targetUrl);
-    const $ = cheerio.load(response.data);
+    const $ = load(response.data);  // Use 'load' instead of cheerio()
 
-    // Rewrite asset URLs in the HTML
+    // Rewrite URLs for assets like images, scripts, and styles
     $('img').each((i, el) => {
       const src = $(el).attr('src');
       if (src && src.startsWith('/')) {
@@ -59,14 +31,15 @@ app.get('/', async (req, res) => {
       }
     });
 
+    // Send the modified HTML back to the client
     res.send($.html());
   } catch (error) {
-    console.error('Error loading page:', error);
-    res.status(500).send('Error loading proxied page');
+    console.error('Error loading the proxied page:', error);
+    res.status(500).send('Error loading the proxied page');
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Proxy running at http://localhost:${PORT}`);
+  console.log(`Proxy running on http://localhost:${PORT}`);
 });
