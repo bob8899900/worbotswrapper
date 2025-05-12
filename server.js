@@ -3,7 +3,7 @@ import axios from 'axios';
 import { load } from 'cheerio';
 
 const app = express();
-const targetUrl = 'https://example.com'; // Replace with the URL you want to proxy
+const targetUrl = 'https://worbots-e189414dd906.herokuapp.com/login'; // Replace with the URL you want to proxy
 
 app.get('/', async (req, res) => {
   try {
